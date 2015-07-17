@@ -12,6 +12,12 @@
 #define	LED4	PC0
 
 
+#define PWM_ON	1
+#define PWM_OFF	 0
+
+#define SYS_CHARGING_STATE	0x00
+#define SYS_DISCHARGE_STATE	0x10
+
 #define	BAT_MAX_LABEL 		4
 
 #define	BAT_ADD			0
@@ -31,9 +37,12 @@
 #define BAT_DETECT_BIT						(1<<1)   //电池测试
 #define BAT_CHECK_BIT						(1<<0)   //有无电池
 
+#if 0
 #define BAT_MIN_VOLT_33_OPEN	472		//(0.3/2.6)*4096
 #define BAT_MIN_VOLT_OPEN	372 			//(0.3/3.3)*4096
 #define BAT_MAX_VOLT_OPEN	2110		//(1.7/3.3)*4096
+
+#define BAT_MIN_VOLT_OPEN_SPE	372 			//(0.3/3.3)*4096
 
 #define BAT_MAX_VOLT_CLOSE 2234		//(1.8/3.3)*4096	
 
@@ -41,19 +50,40 @@
 #define BAT_LEVEL_LOW_TO_MIDD		1737			// 1.4     (1.4/3.3)*4096
 #define BAT_LEVEL_MIDD_TO_HIGH		1750				//  1.41	(1.41/3.3)*4096
 
-#define BAT_LEVEL_LOW	1
-#define BAT_LEVEL_MIDD	2
-#define BAT_LEVEL_HIGH	3
-
-
 #define CHARGING_PRE_END_VOLT		1117			//(0.9/3.3)*4096
 #define CHARGING_FAST_END_VOLT	1799			//(1.45/3.3)*4096
 #define CHARGING_FAST_MAX_VOLT	1986			//(1.6/3.3)*4096
 
 #define CHARGING_FAST_TEMP_END_VOLT	1799			// (1.45/3.3)*4096
+#else
+#define BAT_MIN_VOLT_33_OPEN	472		//(0.3/2.6)*4096
+#define BAT_MIN_VOLT_OPEN	124 			//(0.3/3.3)*4096
+#define BAT_MAX_VOLT_OPEN	703		//(1.7/3.3)*4096
 
-#define BAT_CHARGING_PULSE_TIME	12   //200ms  200/16.384
-#define BAT_CHARGING_DETECT_TIME	12
+
+#define BAT_MAX_VOLT_CLOSE 745		//(1.8/3.3)*4096	
+
+
+#define BAT_LEVEL_LOW_TO_MIDD		579			// 1.4     (1.4/3.3)*4096
+#define BAT_LEVEL_MIDD_TO_HIGH		583				//  1.41	(1.41/3.3)*4096
+
+#define CHARGING_PRE_END_VOLT		372			//(0.9/3.3)*4096
+#define CHARGING_FAST_END_VOLT	600			//(1.45/3.3)*4096
+#define CHARGING_FAST_MAX_VOLT	662			//(1.6/3.3)*4096
+
+#define CHARGING_FAST_TEMP_END_VOLT	600			// (1.45/3.3)*4096
+#endif
+
+#define BAT_LEVEL_LOW	1
+#define BAT_LEVEL_MIDD	2
+#define BAT_LEVEL_HIGH	3
+
+
+
+
+#define BAT_CHARGING_PULSE_TIME	61   //2000ms  2000/16.384
+#define BAT_CHARGING_DETECT_TIME	122
+#define BAT_CHARGING_PWMOFF_DETECT_TIME	90		// 1.5S	
 
 #define BAT_CHARGING_TEST_TIME	7	
 #define BAT_CHARGING_TRICK_TIME	12
@@ -81,15 +111,17 @@
 #define t8p1_start()	T8P1E=1
 #define t8p1_stop()	T8P1E=0
 
-#define CHANNEL_VBAT_1	3
+
+#define CHANNEL_VBAT_1	8
 #define CHANNEL_VBAT_2 4
 #define CHANNEL_VBAT_3	12
-#define CHANNEL_VABT_4	2
+#define CHANNEL_VBAT_4	2
 
-#define CHANNEL_TEMP_1		5
-#define CHANNEL_TEMP_2		6
 
-#define CHANNEL_20_RES	13
+#define CHANNEL_TEMP_1		3
+#define CHANNEL_TEMP_2		3
+
+#define CHANNEL_20_RES	9
 
 #define 	ADC_TEMP_MAX	1069    //55
 #define	ADC_TEMP_MIN	3007	//0
@@ -100,6 +132,17 @@
 
 #define LED_DISPLAY_INTERVAL	122		// 2s 2*1000/16.384
 
+
+//output
+#define OUTPUT_STATUS_WAIT	0
+#define OUTPUT_STATUS_NORMAL	1
+#define MIN_VBAT_CHANNEL_1_IDLE	 1986  //(4.8/3=1.6V   1.6/3.3*4096)
+#define MIN_VBAT_OUPUT				414	//(1/3=0.333	0.3/3.3*4096)
+#define OUTPUT_CHECK_INTERVAL		31	//(500/16.384	31)
+
+#define ENABLE_BOOST()	PB7=1
+#define DISABLE_BOOST()	PB7=0
+
 u32 getSysTick();
 u32 getDiffTickFromNow(u32 ttick);
 void ledHandler(void);
@@ -108,6 +151,7 @@ u32 getBatTick();
 	
 u16 getVbatAdc(u8 channel);
 u16 getAverage(u8 channel);
+u16 getBatTemp(u8 batNum);
 
 void send(u16 sData);
 void sendStr(char str[]);
@@ -116,4 +160,5 @@ void sendF(u32 sData);
 void LED_OFF(u8 led);
 void LED_ON(u8 led);
 
+void delay_ms(u16 nus);
 #endif

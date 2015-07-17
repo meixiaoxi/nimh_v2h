@@ -2,7 +2,9 @@
 #include <hic.h>
 
 extern u8 gBatStateBuf[5];
-extern u8 gBatLeveL[4] ;
+extern u8 gBatLeveL[4];
+extern u8 gSysStatus;
+extern u8 gOutputStatus;
 void LED_ON(u8 led)
 {
 	switch(led)
@@ -34,13 +36,14 @@ void LED_OFF(u8 led)
 }
 
 
+u8 gCount= 0,ledOnFlag=0;
+
+u32 ledDispalyTick = 0;
 
 void ledHandler(void)
 {
 	u8 i;
-	static u8 count= 0,ledOnFlag=0;
-
-	static u32 ledDispalyTick = 0;
+	
 	/*
 	//charging state
 	if(getSysTick() & SHOW_CHARGING_TICK)
@@ -60,17 +63,18 @@ void ledHandler(void)
 		}
 	}
 	*/
-	
+if(gSysStatus == SYS_CHARGING_STATE)
+{
 	if(getDiffTickFromNow(ledDispalyTick) > LED_DISPLAY_INTERVAL)
 	{
 		if(getSysTick() & 0x10)
 		{
 			ledOnFlag = 1;
-			if(count !=0)   //first skip
+			if(gCount !=0)   //first skip
 			{
 				for(i=1;i<5;i++)
 				{
-					if(gBatLeveL[i-1] >=count && (gBatStateBuf[i]&(CHARGE_STATE_ERROR | BAT_TYPE_ERROR)) ==0)
+					if(gBatLeveL[i-1] >=gCount && (gBatStateBuf[i]&(CHARGE_STATE_ERROR | BAT_TYPE_ERROR)) ==0)
 						LED_ON(i);
 				}
 			}
@@ -79,7 +83,7 @@ void ledHandler(void)
 		{
 			if(ledOnFlag == 1)
 			{
-				count++;
+				gCount++;
 				ledOnFlag = 0;				
 			}
 
@@ -89,9 +93,9 @@ void ledHandler(void)
 					LED_OFF(i);		
 			}
 			
-			if(count >4)
+			if(gCount >4)
 			{
-				count =0;
+				gCount =0;
 				ledDispalyTick = getSysTick();
 			}
 		}
@@ -116,7 +120,27 @@ void ledHandler(void)
 				LED_OFF(i);		
 		}
 	}
-
+}
+else
+{
+	if(gOutputStatus == OUTPUT_STATUS_NORMAL)
+	{
+		if(getSysTick() & SHOW_CHARGING_TICK)
+		{
+			for(i=1;i<5;i++)
+			{	
+				LED_ON(i);
+			}
+		}
+		else
+		{
+			for(i=1;i<5;i++)
+			{
+				LED_OFF(i);
+			}
+		}
+	}
+}
 	
 	
 }

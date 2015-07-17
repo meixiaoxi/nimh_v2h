@@ -61,6 +61,29 @@ u16 getAverage(u8 channel)
 	return (ret - max - min)>>3;
 }
 
+u16 getBatTemp(u8 batNum)
+{
+	u16 tempT;
+
+	PBT4 = 0;   //output
+
+	if(batNum <3)
+	{
+		PB4 = 1;
+		tempT = getAverage(CHANNEL_TEMP_1);
+	}
+	else
+	{
+		PB4 = 0;
+		tempT = getAverage(CHANNEL_TEMP_2);
+	}
+
+	PB4 =0;
+	PBT4 = 1; //input
+	
+	return tempT;
+}
+
 u16 getVbatAdc(u8 channel)
 {
 	u16 tempV;
@@ -75,7 +98,7 @@ u16 getVbatAdc(u8 channel)
 		case 3:
 			channel = CHANNEL_VBAT_3;break;
 		case 4:
-			channel = CHANNEL_VABT_4;break;
+			channel = CHANNEL_VBAT_4;break;
 		default:
 			break;
 	}
