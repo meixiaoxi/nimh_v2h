@@ -65,6 +65,8 @@ u16 getBatTemp(u8 batNum)
 {
 	u16 tempT;
 
+	return 2000;
+
 	PBT4 = 0;   //output
 
 	if(batNum <3)
